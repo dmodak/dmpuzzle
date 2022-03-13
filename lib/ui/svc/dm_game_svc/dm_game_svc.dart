@@ -1,15 +1,10 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class DmGameGridModel extends ChangeNotifier {
   void Function(int, int) exchangeTiles;
-
-  static double small = 312;
-  static double medium = 424;
-  static double large = 500;
 
   int gridSize = 3;
   int totalImageCount = 0;
@@ -18,13 +13,8 @@ class DmGameGridModel extends ChangeNotifier {
   int emptyTileRow = 0;
   int emptyTileCol = 0;
 
-  Size mediaSize = const Size(50, 50);
-  //MediaQueryData? media;
-
-  double boardWidth = 300;
-
-  double tileWidth = 50;
-  double tileHeight = 50;
+  double boardSize = 260;
+  double tileSize = 50;
 
   GameState gameStateCd = GameState.selectOptions;
 
@@ -39,24 +29,22 @@ class DmGameGridModel extends ChangeNotifier {
     gridSize = pGridSize;
     if (pGridSize == 3) {
       totalImageCount = 4;
-
-      boardWidth = 300;
+      boardSize = 260;
+      tileSize = 50;
     } else if (pGridSize == 4) {
       totalImageCount = 8;
-      boardWidth = 400;
+      boardSize = 290;
+      tileSize = 40;
     } else if (pGridSize == 6) {
       totalImageCount = 18;
-      boardWidth = 500;
+      boardSize = 385;
+      tileSize = 35;
     }
   }
 
   int getPlayer1MoveCount() {
     return _player1MoveCount;
   }
-
-  // void resetPlayer1MoveCountxxxxx() {
-  //   _player1MoveCount = 0;
-  // }
 
   void addPlayer1MoveCount() {
     _player1MoveCount = _player1MoveCount + 1;
@@ -208,7 +196,7 @@ class TileWidget extends StatefulWidget {
   int col = 0;
   BoardType boardTypeCd = BoardType.answer;
 
-  double borderWidth = 1;
+  double tileBorderWidth = 1;
 
   Color answerStartColor = Colors.grey.shade200;
 
@@ -250,12 +238,12 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
             begin: BoxDecoration(
                 color: Colors.grey.shade200,
                 border: Border.all(
-                    width: widget.borderWidth + 3, color: Colors.black),
+                    width: widget.tileBorderWidth + 3, color: Colors.black),
                 borderRadius: BorderRadius.circular(5)),
             end: BoxDecoration(
                 color: Colors.grey.shade600,
                 border: Border.all(
-                    width: widget.borderWidth, color: Colors.greenAccent),
+                    width: widget.tileBorderWidth, color: Colors.greenAccent),
                 borderRadius: BorderRadius.circular(10)))
         .animate(_answerTileController);
 
@@ -263,38 +251,40 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
             begin: BoxDecoration(
                 color: Colors.grey.shade200,
                 border: Border.all(
-                    width: widget.borderWidth + 3, color: Colors.black),
+                    width: widget.tileBorderWidth + 3, color: Colors.black),
                 borderRadius: BorderRadius.circular(5)),
             end: BoxDecoration(
                 color: Colors.yellow.shade200,
                 border: Border.all(
-                    width: widget.borderWidth, color: Colors.redAccent),
+                    width: widget.tileBorderWidth, color: Colors.blueAccent),
                 borderRadius: BorderRadius.circular(10)))
         .animate(_answerEmptyTileController);
 
     _playerTileDecorationTween = DecorationTween(
-            begin: BoxDecoration(
-                color: Colors.grey.shade200,
-                border: Border.all(
-                    width: widget.borderWidth + 3, color: Colors.black),
-                borderRadius: BorderRadius.circular(5)),
-            end: BoxDecoration(
-                color: Colors.pink.shade600,
-                border: Border.all(
-                    width: widget.borderWidth, color: Colors.greenAccent),
-                borderRadius: BorderRadius.circular(10)))
-        .animate(_playerTileController);
+      begin: BoxDecoration(
+          color: Colors.grey.shade200,
+          border: Border.all(
+              width: widget.tileBorderWidth + 3, color: Colors.black),
+          borderRadius: BorderRadius.circular(5)),
+      end: BoxDecoration(
+        color: Colors.yellow.shade200,
+        border: Border.all(
+            width: widget.tileBorderWidth, color: Colors.orangeAccent),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ).animate(_playerTileController);
 
     _playerEmptyTileDecorationTween = DecorationTween(
             begin: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(
-                    width: widget.borderWidth + 3, color: Colors.black),
-                borderRadius: BorderRadius.circular(5)),
+              color: Colors.white,
+              border: Border.all(
+                  width: widget.tileBorderWidth + 5, color: Colors.black),
+              borderRadius: BorderRadius.circular(5),
+            ),
             end: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(
-                    width: widget.borderWidth, color: Colors.redAccent),
+                    width: widget.tileBorderWidth, color: Colors.black),
                 borderRadius: BorderRadius.circular(10)))
         .animate(_playerEmptyTileController);
   }
@@ -328,10 +318,8 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
         .getGameModel()[widget.row]
         .tileModelList[widget.col]
         .isAnswerImage) {
-      widget.borderWidth = 10.0;
       isAnswerTile = true;
     } else {
-      widget.borderWidth = 2.0;
       isAnswerTile = false;
     }
 
@@ -372,8 +360,8 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
           ? _answerTileDecorationTween
           : _answerEmptyTileDecorationTween,
       child: Container(
-        height: Provider.of<DmGameGridModel>(context, listen: false).tileHeight,
-        width: Provider.of<DmGameGridModel>(context, listen: false).tileWidth,
+        height: Provider.of<DmGameGridModel>(context, listen: false).tileSize,
+        width: Provider.of<DmGameGridModel>(context, listen: false).tileSize,
         margin: const EdgeInsets.all(10),
         child: IconButton(
           icon: _tileIcon,
@@ -385,25 +373,22 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
 
   Widget getPlayerTile(BuildContext context) {
     Icon _tileIcon = const Icon(null);
-    Icon _tileIconNone = const Icon(null);
     bool isAnswerTile = false;
     bool isEmptyTile = false;
 
     Color _iconColor = Colors.black87;
-    Color _tileColor = Colors.grey.shade400;
-
     ImageColor _tileImageColorCd = ImageColor.none;
     ImageType _tileImageTypeCd = ImageType.none;
-    bool imageFound = false;
-    double _borderWidth = 1.0;
+
+    Animation<Decoration> curAnimationDecoration;
+
+    // double _borderWidth = 1.0;
     if (Provider.of<DmGameGridModel>(context, listen: false).emptyTileRow ==
             widget.row &&
         Provider.of<DmGameGridModel>(context, listen: false).emptyTileCol ==
             widget.col) {
-      _tileColor = Colors.white;
       isEmptyTile = true;
     } else {
-      _tileColor = Colors.grey.shade400;
       isEmptyTile = false;
     }
 
@@ -435,9 +420,9 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
                 .getGameModel()[widget.row]
                 .tileModelList[widget.col]
                 .player1ImageColorCd) {
-      _borderWidth = 3.0;
+      isAnswerTile = true;
     } else {
-      _borderWidth = 2.0;
+      isAnswerTile = false;
     }
 
     if (Provider.of<DmGameGridModel>(context, listen: false).gameStateCd ==
@@ -466,19 +451,6 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
           .answerImageTypeCd;
     }
 
-    if (Provider.of<DmGameGridModel>(context, listen: false).gameStateCd ==
-        GameState.playGame) {
-      imageFound = Provider.of<DmGameGridModel>(context, listen: false)
-          .getGameModel()[widget.row]
-          .tileModelList[widget.col]
-          .isPlayer1Image;
-    } else {
-      imageFound = Provider.of<DmGameGridModel>(context, listen: false)
-          .getGameModel()[widget.row]
-          .tileModelList[widget.col]
-          .isAnswerImage;
-    }
-
     if (_tileImageColorCd == ImageColor.red) {
       _iconColor = Colors.red;
     }
@@ -501,15 +473,18 @@ class _TileWidgetState extends State<TileWidget> with TickerProviderStateMixin {
       _tileIcon = Icon(FontAwesomeIcons.kiwiBird, color: _iconColor);
     }
 
+    if (isEmptyTile) {
+      curAnimationDecoration = _playerEmptyTileDecorationTween;
+    } else if (isAnswerTile) {
+      curAnimationDecoration = _answerTileDecorationTween;
+    } else {
+      curAnimationDecoration = _playerTileDecorationTween;
+    }
     return DecoratedBoxTransition(
-      decoration: isEmptyTile
-          ? _playerEmptyTileDecorationTween
-          : isAnswerTile
-              ? _answerTileDecorationTween
-              : _playerTileDecorationTween,
+      decoration: curAnimationDecoration,
       child: Container(
-        height: Provider.of<DmGameGridModel>(context, listen: false).tileHeight,
-        width: Provider.of<DmGameGridModel>(context, listen: false).tileWidth,
+        height: Provider.of<DmGameGridModel>(context, listen: false).tileSize,
+        width: Provider.of<DmGameGridModel>(context, listen: false).tileSize,
         margin: const EdgeInsets.all(10),
         child: IconButton(
           icon: _tileIcon,

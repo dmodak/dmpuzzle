@@ -36,9 +36,6 @@ class _DmGameGridPageState extends State<DmGameGridPage>
       });
     });
 
-    //_memGrid!.media = MediaQuery.of(context);
-    // _memGrid!.mediaSize = MediaQuery.of(context).size;
-
     _memGrid!.setGridSize(3);
     _memGrid!.clearSelImageType();
     _memGrid!.addSelImageType(ImageType.kiwi);
@@ -416,7 +413,7 @@ class _DmGameGridPageState extends State<DmGameGridPage>
                 const SizedBox(height: 5.0),
                 Container(
                   // margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  width: _memGrid!.boardWidth,
+                  width: _memGrid!.boardSize,
                   padding: const EdgeInsets.all(20.0),
                   alignment: Alignment.topCenter,
                   decoration: BoxDecoration(
@@ -442,7 +439,7 @@ class _DmGameGridPageState extends State<DmGameGridPage>
                 const SizedBox(height: 5.0),
                 Container(
                   //margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  width: _memGrid!.boardWidth,
+                  width: _memGrid!.boardSize,
                   padding: const EdgeInsets.all(20.0),
                   alignment: Alignment.topCenter,
                   decoration: BoxDecoration(
@@ -456,64 +453,6 @@ class _DmGameGridPageState extends State<DmGameGridPage>
                 ),
               ],
             ),
-        ],
-      ),
-    );
-  }
-
-  Container showGameBoardContainerxxx() {
-    return Container(
-      height: 500,
-      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 3,
-          color: Theme.of(context).primaryColor,
-        ),
-        borderRadius: BorderRadius.all(Radius.circular(8)),
-      ),
-      child: Column(
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              AbsorbPointer(
-                absorbing: true,
-                child: Container(
-                  // margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  padding: const EdgeInsets.all(20.0),
-                  alignment: Alignment.topCenter,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 3,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  child: getAnswerBoardWidget(),
-                ),
-              ),
-              Spacer(flex: 2),
-              if (_memGrid!.gameStateCd == GameState.playGame)
-                AbsorbPointer(
-                  absorbing: !(_memGrid!.gameStateCd == GameState.playGame),
-                  child: Container(
-                    //margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                    padding: const EdgeInsets.all(20.0),
-                    alignment: Alignment.topCenter,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 3,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                    ),
-                    child: getPlayerBoardWidget(),
-                  ),
-                ),
-              Spacer(flex: 10),
-            ],
-          ),
         ],
       ),
     );
@@ -747,13 +686,6 @@ class _DmGameGridPageState extends State<DmGameGridPage>
     } else if (oldEmptyRow == sourceRow) {
       _memGrid!.emptyTileRow = -1;
       _memGrid!.emptyTileCol = -1;
-      // Set empty row.
-      playerBoardWidget[sourceRow].tileWidgetList[sourceCol] = TileWidget(
-        key: UniqueKey(),
-        row: oldEmptyRow,
-        col: oldEmptyCol,
-        boardTypeCd: BoardType.player,
-      );
 
       //If rows are matching then shift column cells
       if (oldEmptyCol > sourceCol) {
@@ -768,27 +700,12 @@ class _DmGameGridPageState extends State<DmGameGridPage>
         }
       }
 
-      //
       // Set empty row.
       _memGrid!.emptyTileRow = newEmptyRow;
       _memGrid!.emptyTileCol = newEmptyCol;
-
-      playerBoardWidget[sourceRow].tileWidgetList[sourceCol] = TileWidget(
-        key: UniqueKey(),
-        row: newEmptyRow,
-        col: newEmptyCol,
-        boardTypeCd: BoardType.player,
-      );
     } else if (oldEmptyCol == sourceCol) {
       _memGrid!.emptyTileRow = -1;
       _memGrid!.emptyTileCol = -1;
-      // Set empty row.
-      playerBoardWidget[sourceRow].tileWidgetList[sourceCol] = TileWidget(
-        key: UniqueKey(),
-        row: oldEmptyRow,
-        col: oldEmptyCol,
-        boardTypeCd: BoardType.player,
-      );
 
       //If columns are matching then shift row cells
       if (oldEmptyRow > sourceRow) {
@@ -802,20 +719,14 @@ class _DmGameGridPageState extends State<DmGameGridPage>
           shiftTiles(i + 1, sourceCol, i, sourceCol);
         }
       }
-
       // Set empty row.
       _memGrid!.emptyTileRow = newEmptyRow;
       _memGrid!.emptyTileCol = newEmptyCol;
-
-      playerBoardWidget[sourceRow].tileWidgetList[sourceCol] = TileWidget(
-        key: UniqueKey(),
-        row: newEmptyRow,
-        col: newEmptyCol,
-        boardTypeCd: BoardType.player,
-      );
     } else {
       //do nothing
     }
+
+    refreshPlayerBoardWidget();
 
     // check for game is over
     bool _gameOver = true;
@@ -838,14 +749,12 @@ class _DmGameGridPageState extends State<DmGameGridPage>
       }
     }
 
-    // printBoardImage();
-
     if (_gameOver) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text("Congratulation!"),
+              title: const Text("Congratulations!"),
               titleTextStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -861,7 +770,7 @@ class _DmGameGridPageState extends State<DmGameGridPage>
                   },
                 ),
               ],
-              content: const Text("You solved the game successfully.",
+              content: const Text("You have solved the game successfully.",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -873,15 +782,6 @@ class _DmGameGridPageState extends State<DmGameGridPage>
     }
 
     setState(() {});
-  }
-
-  setEmptyTylexxxxxx(int row, int col) {
-    playerBoardWidget[row].tileWidgetList[col] = TileWidget(
-      key: UniqueKey(),
-      row: row,
-      col: col,
-      boardTypeCd: BoardType.player,
-    );
   }
 
   shiftTiles(int sourceRow, int sourceCol, int targetRow, int targetCol) {
@@ -936,20 +836,6 @@ class _DmGameGridPageState extends State<DmGameGridPage>
         .getGameModel()[targetRow]
         .tileModelList[targetCol]
         .isPlayer1Image = isPlayer1SourceImage;
-
-    playerBoardWidget[sourceRow].tileWidgetList[sourceCol] = TileWidget(
-      key: UniqueKey(),
-      row: sourceRow,
-      col: sourceCol,
-      boardTypeCd: BoardType.player,
-    );
-
-    playerBoardWidget[targetRow].tileWidgetList[targetCol] = TileWidget(
-      key: UniqueKey(),
-      row: targetRow,
-      col: targetCol,
-      boardTypeCd: BoardType.player,
-    );
 
     // Increment move count.
     _memGrid!.addPlayer1MoveCount();
